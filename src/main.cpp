@@ -50,10 +50,13 @@ public:
         settings = new RenderSettings(settingsJson);
         auto camera = CameraFactory::LoadCameraFromJson(sceneJson["camera"]);
         Point2i resolution = getOptional(sceneJson["camera"], "resolution", Point2i(512, 512));
+        const int cpuThreadNum = static_cast<int>(std::thread::hardware_concurrency());
+        const int renderThreadNum = cpuThreadNum >= 4 ? cpuThreadNum - 2 : 1;
         VolPathIntegrator integrator(camera, std::make_unique<Film>(resolution, 3),
-                                     std::make_unique<SequenceTileGenerator>(resolution), std::make_shared<IndependentSampler>(settings->spp, 5), settings->spp, 12);
+                                     std::make_unique<SequenceTileGenerator>(resolution), std::make_shared<IndependentSampler>(settings->spp, 5), settings->spp, renderThreadNum);
 
         std::cout << "start rendering" << std::endl;
+        std::cout << "render thread " << renderThreadNum << std::endl;
         integrator.render(scene);
         integrator.save(settings->outputPath);
         std::cout << "finish" << std::endl;
