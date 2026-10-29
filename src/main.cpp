@@ -3,11 +3,13 @@
 #include "FunctionLayer/Integrator/PathIntegrator-new.h"
 #include "FunctionLayer/Integrator/NormalIntegrator.h"
 #include "FunctionLayer/Integrator/VolPathIntegrator.h"
+#include "FunctionLayer/Integrator/SpectrumVolPathIntegrator.h"
 #include "FunctionLayer/Sampler/Halton.h"
 #include "ResourceLayer/File/FileUtils.h"
 #include "FunctionLayer/TileGenerator/SequenceTileGenerator.h"
 #include "FunctionLayer/Sampler/Independent.h"
 #include "FunctionLayer/Camera/CameraFactory.h"
+#include "FunctionLayer/Sampler/SpectrumSampler.h"
 
 struct RenderSettings {
     int spp;
@@ -52,8 +54,8 @@ public:
         Point2i resolution = getOptional(sceneJson["camera"], "resolution", Point2i(512, 512));
         const int cpuThreadNum = static_cast<int>(std::thread::hardware_concurrency());
         const int renderThreadNum = cpuThreadNum >= 4 ? cpuThreadNum - 2 : 1;
-        VolPathIntegrator integrator(camera, std::make_unique<Film>(resolution, 3),
-                                     std::make_unique<SequenceTileGenerator>(resolution), std::make_shared<IndependentSampler>(settings->spp, 5), settings->spp, renderThreadNum);
+        SpectrumVolPathIntegrator integrator(camera, std::make_unique<Film>(resolution, 3),
+                             std::make_unique<SequenceTileGenerator>(resolution), std::make_shared<SpectrumSampler>(settings->spp, 5), settings->spp, renderThreadNum);
 
         std::cout << "start rendering" << std::endl;
         std::cout << "render thread " << renderThreadNum << std::endl;
